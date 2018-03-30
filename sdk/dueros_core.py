@@ -34,6 +34,11 @@ import sdk.configurate
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+logger2 = logging.getLogger('mylogger')  
+logger2.setLevel(logging.INFO)
+fh = logging.FileHandler('/tmp/test.log')
+logger2.addHandler(fh)
+
 
 class DuerOSStateListner(object):
     '''
@@ -435,18 +440,35 @@ class DuerOS(object):
             self.directive_listener(directive)
 
         logger.debug(json.dumps(directive, indent=4))
+        #logger2.info(directive) #yonghu
+        if directive['payload'].has_key('type'):
+            if directive['payload']['type'] == "FINAL":  #yonghu
+                usertext = directive['payload']['text']
+                #logger2.info("---------usertext-----------") #yonghu
+                #logger2.info(usertext) #yonghu
+        
         try:
             namespace = directive['header']['namespace']
-
+            #logger2.info("---------namespace-----------") #yonghu
+            #logger2.info(namespace) #yonghu
             namespace = self.__namespace_convert(namespace)
             if not namespace:
                 return
 
             name = directive['header']['name']
+            #logger2.info("---------name-----------") #yonghu
+            #logger2.info(name) #yonghu
             name = self.__name_convert(name)
-            if hasattr(self, namespace):
+            uflag = 1
+
+            if hasattr(self, namespace) & uflag == 1:
                 interface = getattr(self, namespace)
+                #logger2.info("---------interface-----------") #yonghu
+                #logger2.info(interface) #yonghu
+                    
                 directive_func = getattr(interface, name, None)
+                #logger2.info("---------directive_func-----------") #yonghu
+                #logger2.info(directive_func) #yonghu
                 if directive_func:
                     directive_func(directive)
                 else:
