@@ -31,6 +31,8 @@ from sdk.interface.speech_synthesizer import SpeechSynthesizer
 from sdk.interface.system import System
 import sdk.configurate
 
+from mysdk.usercmdprocress import TextIn #用户命令分析模块
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,7 @@ logger2 = logging.getLogger('mylogger')
 logger2.setLevel(logging.INFO)
 fh = logging.FileHandler('/tmp/test.log')
 logger2.addHandler(fh)
+usertext = '' #用户语音文本
 
 
 class DuerOSStateListner(object):
@@ -436,17 +439,22 @@ class DuerOS(object):
         :param directive:
         :return:
         '''
+        global usertext
+        
         if 'directive_listener' in dir(self):
             self.directive_listener(directive)
-
         logger.debug(json.dumps(directive, indent=4))
-        #logger2.info(directive) #yonghu
+        #logger2.info(directive) #yonghu 
+        #-------------------------------------------用户命令分析，控制调用----------------------------------------#
         if directive['payload'].has_key('type'):
             if directive['payload']['type'] == "FINAL":  #yonghu
                 usertext = directive['payload']['text']
                 #logger2.info("---------usertext-----------") #yonghu
                 #logger2.info(usertext) #yonghu
-        
+        if directive['payload'].has_key('url'):
+            if TextIn(usertext):
+                directive['payload']['url'] = u'cid:000000'
+            
         try:
             namespace = directive['header']['namespace']
             #logger2.info("---------namespace-----------") #yonghu
@@ -459,23 +467,21 @@ class DuerOS(object):
             #logger2.info("---------name-----------") #yonghu
             #logger2.info(name) #yonghu
             name = self.__name_convert(name)
-            uflag = 1
-
-            if hasattr(self, namespace) & uflag == 1:
+            if hasattr(self, namespace):
                 interface = getattr(self, namespace)
                 #logger2.info("---------interface-----------") #yonghu
                 #logger2.info(interface) #yonghu
-                    
+                        
                 directive_func = getattr(interface, name, None)
                 #logger2.info("---------directive_func-----------") #yonghu
                 #logger2.info(directive_func) #yonghu
                 if directive_func:
                     directive_func(directive)
+                    #pass
                 else:
                     logger.info('{}.{} is not implemented yet'.format(namespace, name))
             else:
                 logger.info('{} is not implemented yet'.format(namespace))
-
         except KeyError as e:
             logger.exception(e)
         except Exception as e:

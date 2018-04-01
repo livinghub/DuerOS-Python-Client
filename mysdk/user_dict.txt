@@ -1,0 +1,23 @@
+分钟后 1 time
+秒后 1 time
+
+大厅 1 site
+房间 1 site
+卧室 1 site
+
+灯 9999999 device
+的灯 999999 device
+空调 999999 device
+风扇 999999 device
+电视 999999 device
+开关 1 device
+电脑 1 device
+
+开一下 1 action
+打开 1 action
+开了 1 action
+关 1 action
+关了 1 action
+关闭 1 action
+
+后 10
